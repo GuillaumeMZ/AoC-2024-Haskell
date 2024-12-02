@@ -5,4 +5,4 @@ import Day02
 main :: IO ()
 main = do
     input <- getContents
-    Day02.partOne input
+    Day02.partTwo input

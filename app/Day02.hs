@@ -30,9 +30,28 @@ isReportSafe' ordering (x:x':xs) =
 isReportSafe :: [Int] -> Bool
 isReportSafe report = isReportSafe' Increasing report || isReportSafe' Decreasing report
 
+isReportSafe2' :: Ordering -> [Int] -> [Int] -> Bool
+isReportSafe2' _ [] _ = True
+isReportSafe2' _ [_] _ = True
+isReportSafe2' ordering (x:x':xs) treated =
+    if correct then isReportSafe2' ordering (x':xs) (treated ++ [x])
+    else isReportSafe' ordering (treated ++ (x:xs)) || isReportSafe' ordering (treated ++ (x':xs))
+    where correct = diff >= 1 && diff <= 3
+          diff = if ordering == Increasing then x' - x else x - x'
+
+isReportSafe2 :: [Int] -> Bool
+isReportSafe2 report = isReportSafe2' Increasing report [] || isReportSafe2' Decreasing report []
+
 partOne :: String -> IO ()
 partOne input = do
     let parsedInput = runParser parseInput "<stdin>" input
     case parsedInput of
         Left _ -> print "parse error"
         Right reports -> print (length (filter isReportSafe reports))
+
+partTwo :: String -> IO ()
+partTwo input = do
+    let parsedInput = runParser parseInput "<stdin>" input
+    case parsedInput of
+        Left _ -> print "parse error"
+        Right reports -> print (length (filter isReportSafe2 reports))
