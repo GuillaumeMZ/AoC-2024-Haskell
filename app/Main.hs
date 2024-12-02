@@ -1,8 +1,8 @@
 module Main where
 
-import Day01
+import Day02
 
 main :: IO ()
 main = do
     input <- getContents
-    Day01.partTwo input
+    Day02.partOne input
