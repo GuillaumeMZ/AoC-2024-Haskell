@@ -37,10 +37,10 @@ deleteIndex index list = (take index list) ++ (drop (index + 1) list)
 
 isReportSafe2' :: [Int] -> Ordering -> Bool
 isReportSafe2' report ordering = 
-    case potentialDiscrepency of
+    case potentialDiscrepancy of
         Just index -> isReportSafe' (deleteIndex index report) ordering || isReportSafe' (deleteIndex (index + 1) report) ordering
         Nothing -> True
-    where potentialDiscrepency = computeDistances ordering report & findIndex (not . inRange)
+    where potentialDiscrepancy = computeDistances ordering report & findIndex (not . inRange)
 
 isReportSafe2 :: [Int] -> Bool
 isReportSafe2 report = ((||) `on` isReportSafe2' report) Increasing Decreasing
