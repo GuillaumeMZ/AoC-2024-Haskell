@@ -10,4 +10,4 @@ main = do
     let parseResult = runParser parser "<stdin>" input
     case parseResult of
         Left _ -> print "parse error"
-        Right parsedInput -> print (partOne parsedInput)
+        Right parsedInput -> print (partTwo parsedInput)
