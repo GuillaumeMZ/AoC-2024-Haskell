@@ -1,8 +1,13 @@
 module Main where
 
-import Day02
+import Text.Megaparsec (runParser)
+
+import Day02 (parser, partOne, partTwo)
 
 main :: IO ()
 main = do
     input <- getContents
-    Day02.partTwo input
+    let parseResult = runParser parser "<stdin>" input
+    case parseResult of
+        Left _ -> print "parse error"
+        Right parsedInput -> print (partTwo parsedInput)

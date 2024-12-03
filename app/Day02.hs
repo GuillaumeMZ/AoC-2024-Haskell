@@ -1,57 +1,52 @@
-module Day02 where
+module Day02 (parser, partOne, partTwo, deleteIndex) where
 
 import Prelude hiding (Ordering)
-import Text.Megaparsec (Parsec, runParser, sepBy, many)
+import Text.Megaparsec (Parsec, sepBy1, sepEndBy)
 import Text.Megaparsec.Char (hspace, newline)
 import Text.Megaparsec.Char.Lexer (decimal)
+import Data.List (findIndex)
+import Data.Function (on, (&))
 import Data.Void (Void)
 
 type Parser = Parsec Void String
 
-parseRow :: Parser [Int]
-parseRow = do
-    digits <- sepBy decimal hspace
-    _ <- newline
-    return digits
-
-parseInput :: Parser [[Int]]
-parseInput = many parseRow
+parser :: Parser [[Int]]
+parser = sepEndBy row newline
+    where row = sepBy1 decimal hspace -- without 1, empty line is recognized as []
 
 data Ordering = Increasing | Decreasing deriving (Eq)
 
-isReportSafe' :: Ordering -> [Int] -> Bool
-isReportSafe' _ [] = True
-isReportSafe' _ [_] = True
-isReportSafe' ordering (x:x':xs) =
-    correct && isReportSafe' ordering (x':xs) 
-    where correct = diff >= 1 && diff <= 3 
-          diff = if ordering == Increasing then x' - x else x - x'
+distance :: Num a => Ordering -> (a -> a -> a)
+distance Increasing = flip (-)
+distance Decreasing = (-)
+
+computeDistances :: Ordering -> [Int] -> [Int]
+computeDistances ordering report = zipWith (distance ordering) (init report) (tail report) 
+
+inRange :: Int -> Bool
+inRange delta = delta >= 1 && delta <= 3
+
+isReportSafe' :: [Int] -> Ordering -> Bool
+isReportSafe' report ordering = all inRange (computeDistances ordering report)
 
 isReportSafe :: [Int] -> Bool
-isReportSafe report = isReportSafe' Increasing report || isReportSafe' Decreasing report
+isReportSafe report = ((||) `on` isReportSafe' report) Increasing Decreasing
 
-isReportSafe2' :: Ordering -> [Int] -> [Int] -> Bool
-isReportSafe2' _ [] _ = True
-isReportSafe2' _ [_] _ = True
-isReportSafe2' ordering (x:x':xs) treated =
-    if correct then isReportSafe2' ordering (x':xs) (treated ++ [x])
-    else isReportSafe' ordering (treated ++ (x:xs)) || isReportSafe' ordering (treated ++ (x':xs))
-    where correct = diff >= 1 && diff <= 3
-          diff = if ordering == Increasing then x' - x else x - x'
+deleteIndex :: Int -> [a] -> [a]
+deleteIndex index list = (take index list) ++ (drop (index + 1) list)
+
+isReportSafe2' :: [Int] -> Ordering -> Bool
+isReportSafe2' report ordering = 
+    case potentialDiscrepency of
+        Just index -> isReportSafe' (deleteIndex index report) ordering || isReportSafe' (deleteIndex (index + 1) report) ordering
+        Nothing -> True
+    where potentialDiscrepency = computeDistances ordering report & findIndex (not . inRange)
 
 isReportSafe2 :: [Int] -> Bool
-isReportSafe2 report = isReportSafe2' Increasing report [] || isReportSafe2' Decreasing report []
+isReportSafe2 report = ((||) `on` isReportSafe2' report) Increasing Decreasing
 
-partOne :: String -> IO ()
-partOne input = do
-    let parsedInput = runParser parseInput "<stdin>" input
-    case parsedInput of
-        Left _ -> print "parse error"
-        Right reports -> print (length (filter isReportSafe reports))
+partOne :: [[Int]] -> Int
+partOne reports = length (filter isReportSafe reports)
 
-partTwo :: String -> IO ()
-partTwo input = do
-    let parsedInput = runParser parseInput "<stdin>" input
-    case parsedInput of
-        Left _ -> print "parse error"
-        Right reports -> print (length (filter isReportSafe2 reports))
+partTwo :: [[Int]] -> Int
+partTwo reports = length (filter isReportSafe2 reports)

@@ -1,10 +1,11 @@
-module Day01 where
+module Day01 (parser, partOne, partTwo) where
 
-import Text.Megaparsec (Parsec, sepEndBy, runParser)
+import Text.Megaparsec (Parsec, sepEndBy)
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer (decimal)
 import Data.Void (Void)
 import Data.List (sort)
+import Data.Function ((&))
 
 type Parser = Parsec Void String
 
@@ -15,21 +16,17 @@ parseRow = do
     second <- decimal
     return (first, second)
 
-parseInput :: Parser ([Int], [Int])
-parseInput = do
+parser :: Parser ([Int], [Int])
+parser = do
     lists <- sepEndBy parseRow (char '\n')
     return (unzip lists)
 
 computeTotalDistance :: ([Int], [Int]) -> Int -- part 01
-computeTotalDistance (firstList, secondList) =
-    let (firstSortedList, secondSortedList) = (sort firstList, sort secondList) in
-    let combinedSortedLists = zip firstSortedList secondSortedList in
-    let distances = map (\(a, b) -> abs (b - a)) combinedSortedLists in
-    sum distances
+computeTotalDistance (firstList, secondList) = zipWith distance (sort firstList) (sort secondList) & sum
+    where distance a b = abs (b - a)
 
 count :: Eq a => [a] -> a -> Int -- part 02
-count [] _ = 0
-count (x:xs) target = if x == target then 1 + remainingCount else remainingCount where remainingCount = count xs target 
+count list target = length (filter ((==) target) list)
 
 computeTotalSimilarityScore :: ([Int], [Int]) -> Int -- part 02
 computeTotalSimilarityScore (firstList, secondList) =
@@ -38,16 +35,8 @@ computeTotalSimilarityScore (firstList, secondList) =
     let similarities = map (uncurry (*)) combinedLists in
     sum similarities
 
-partOne :: String -> IO ()
-partOne input = do
-    let parseResult = runParser parseInput "<stdin>" input
-    case parseResult of
-        Left _ -> putStrLn "parse error"
-        Right lists -> print (computeTotalDistance lists)
+partOne :: ([Int], [Int]) -> Int
+partOne lists = computeTotalDistance lists
 
-partTwo :: String -> IO ()
-partTwo input = do
-    let parseResult = runParser parseInput "<stdin>" input
-    case parseResult of
-        Left _ -> putStrLn "parse error"
-        Right lists -> print (computeTotalSimilarityScore lists)
+partTwo :: ([Int], [Int]) -> Int
+partTwo lists = computeTotalSimilarityScore lists
