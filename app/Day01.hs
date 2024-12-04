@@ -10,7 +10,7 @@ import Data.Function ((&))
 type Parser = Parsec Void String
 
 parseRow :: Parser (Int, Int)
-parseRow = (,) <$> (decimal <* space) <*> decimal
+parseRow = liftA2 (,) (decimal <* space) decimal
 
 parser :: Parser ([Int], [Int])
 parser = unzip <$> sepEndBy parseRow (char '\n')
