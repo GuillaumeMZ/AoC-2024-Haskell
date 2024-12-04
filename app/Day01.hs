@@ -10,16 +10,10 @@ import Data.Function ((&))
 type Parser = Parsec Void String
 
 parseRow :: Parser (Int, Int)
-parseRow = do
-    first <- decimal
-    _ <- space 
-    second <- decimal
-    return (first, second)
+parseRow = (,) <$> (decimal <* space) <*> decimal
 
 parser :: Parser ([Int], [Int])
-parser = do
-    lists <- sepEndBy parseRow (char '\n')
-    return (unzip lists)
+parser = unzip <$> sepEndBy parseRow (char '\n')
 
 computeTotalDistance :: ([Int], [Int]) -> Int -- part 01
 computeTotalDistance (firstList, secondList) = zipWith distance (sort firstList) (sort secondList) & sum
