@@ -62,3 +62,23 @@ countXmases grid x y =
 
 partOne :: [[Letter]] -> Int
 partOne grid = countXmases grid 0 0
+
+isXmas2 :: [[Letter]] -> Int -> Int -> Bool
+isXmas2 grid x y =
+    letter == Just A &&
+    (topLeft == Just M && bottomRight == Just S || topLeft == Just S && bottomRight == Just M) &&
+    (topRight == Just M && bottomLeft == Just S || topRight == Just S && bottomLeft == Just M)
+    where letter = letterAt grid (x, y)
+          topLeft = letterAt grid (applyDirectionCalculation NW (x, y) 1)
+          topRight = letterAt grid (applyDirectionCalculation NE (x, y) 1)
+          bottomLeft = letterAt grid (applyDirectionCalculation SW (x, y) 1)
+          bottomRight = letterAt grid (applyDirectionCalculation SE (x, y) 1)
+
+countXmases2 :: [[Letter]] -> Int -> Int -> Int
+countXmases2 grid x y =
+    if x >= height grid then 0 -- the whole grid was tested; end
+    else if y >= width grid then countXmases2 grid (x + 1) 0 -- the current line was tested; go to the next line
+    else (if isXmas2 grid x y then 1 else 0) + (countXmases2 grid x (y + 1))
+
+partTwo :: [[Letter]] -> Int
+partTwo grid = countXmases2 grid 0 0
