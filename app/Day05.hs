@@ -28,10 +28,8 @@ parser = do
     return (rules, updates)
 
 makePairs :: Eq a => [a] -> [(a, a)]
-makePairs l = nub $ makePairs' l
-    where makePairs' [] = []
-          makePairs' [_] = []
-          makePairs' (x:x':xs) = (x,x'):makePairs (x:xs) ++ makePairs (x':xs)
+makePairs [] = []
+makePairs (x:xs) = map (x,) xs ++ makePairs xs
 
 updateRespectsRules :: [Int] -> [(Int, Int)] -> Bool
 updateRespectsRules update rules = all pairRespectsRules (makePairs update)
