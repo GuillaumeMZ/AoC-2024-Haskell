@@ -2,7 +2,7 @@ module Main where
 
 import Text.Megaparsec (runParser)
 
-import Day05 (parser, partOne)
+import Day05 (parser, partTwo)
 
 main :: IO ()
 main = do
@@ -10,4 +10,4 @@ main = do
     let parseResult = runParser parser "<stdin>" input
     case parseResult of
         Left _ -> print "parse error"
-        Right parsedInput -> print (partOne parsedInput)
+        Right parsedInput -> print (partTwo parsedInput)

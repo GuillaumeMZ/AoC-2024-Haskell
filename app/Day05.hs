@@ -4,7 +4,6 @@ import Text.Megaparsec (Parsec, sepBy, some)
 import Text.Megaparsec.Char (char, newline)
 import Text.Megaparsec.Char.Lexer (decimal)
 import Data.Function ((&))
-import Data.List (nub)
 import Data.Void (Void)
 
 type Parser = Parsec Void String
@@ -32,9 +31,13 @@ makePairs [] = []
 makePairs (x:xs) = map (x,) xs ++ makePairs xs
 
 updateRespectsRules :: [Int] -> [(Int, Int)] -> Bool
-updateRespectsRules update rules = all pairRespectsRules (makePairs update)
-    where pairRespectsRules pair = all (pairRespectsRule pair) rules
-          pairRespectsRule (pair1, pair2) rule = (pair2, pair1) /= rule
+updateRespectsRules update rules = all (`pairRespectsRules` rules) (makePairs update)
+
+pairRespectsRules :: (Int, Int) -> [(Int, Int)] -> Bool
+pairRespectsRules pair rules = all (pairRespectsRule pair) rules
+
+pairRespectsRule :: (Int, Int) -> (Int, Int) -> Bool
+pairRespectsRule (pair1, pair2) rule = (pair2, pair1) /= rule
 
 middle :: [a] -> a
 middle list = list !! middleIndex where middleIndex = ((length list) - 1) `div` 2
@@ -44,3 +47,19 @@ partOne (rules, updates) =
     filter (`updateRespectsRules` rules) updates
     & map middle
     & sum
+
+correctUpdate :: [(Int, Int)] -> [Int] -> [Int]
+correctUpdate rules update =
+    if update == corrected then update else correctUpdate rules corrected
+    where corrected = correctUpdate' update
+          correctUpdate' :: [Int] -> [Int]
+          correctUpdate' [] = []
+          correctUpdate' [x] = [x]
+          correctUpdate' (x:x':xs) = if not $ pairRespectsRules (x, x') rules then x':correctUpdate rules (x:xs) else x:correctUpdate rules (x':xs)
+
+partTwo :: ([(Int, Int)], [[Int]]) -> Int
+partTwo (rules, updates) = 
+    filter (not . (`updateRespectsRules` rules)) updates
+    & map (correctUpdate rules)
+    & map middle
+    & sum 
