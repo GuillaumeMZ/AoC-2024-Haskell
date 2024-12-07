@@ -20,8 +20,8 @@ parser = some equation
             return (result, operators)
 
 operatorsCombinations :: Int -> [[(Int -> Int -> Int)]]
-operatorsCombinations 1 = [[(+)], [(*)]]
-operatorsCombinations n = map ((+):) sublist ++ map ((*):) sublist
+operatorsCombinations 1 = [[(+)], [(*)], [concatOperator]]
+operatorsCombinations n = map ((+):) sublist ++ map ((*):) sublist ++ map (concatOperator:) sublist
   where sublist = operatorsCombinations $ n - 1
 
 applyCombination :: [Int] -> [(Int -> Int -> Int)] -> Int
@@ -36,3 +36,6 @@ isSolvable (expected, operators) = expected `elem` computedSolutions
 
 partOne :: [Equation] -> Int
 partOne equations = equations & filter isSolvable & map fst & sum
+
+concatOperator :: Int -> Int -> Int
+concatOperator lhs rhs = show lhs ++ show rhs & read
