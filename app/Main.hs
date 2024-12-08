@@ -2,7 +2,7 @@ module Main where
 
 import Text.Megaparsec (runParser)
 
-import Day07 (parser, partOne)
+import Day08 (parser, partOne)
 
 main :: IO ()
 main = do
