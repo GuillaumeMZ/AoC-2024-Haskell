@@ -5,6 +5,7 @@ import Text.Megaparsec.Char (alphaNumChar, char, newline)
 import Data.List (sortBy, groupBy, nub)
 import Data.Function (on)
 import Common
+import Data.Bifunctor (Bifunctor(bimap))
 
 data Cell = Empty | Antenna Char deriving Show
 type Grid = [[Cell]]
@@ -47,3 +48,19 @@ partOne grid =
     where tupleListToList :: [(a, a)] -> [a]
           tupleListToList [] = []
           tupleListToList ((a, b):xs) = a:b:tupleListToList xs
+
+antinodes2 :: Grid -> (Coord2D, Coord2D) -> [Coord2D]
+antinodes2 grid (a1@(x1, y1), a2@(x2, y2)) = takeWhile (not . Common.outOfBounds grid) a1s ++ takeWhile (not . Common.outOfBounds grid) a2s
+    where 
+        dx = x1 - x2
+        dy = y1 - y2
+        a1s = [a1] ++ map (bimap (+dx) (+dy)) a1s
+        a2s = [a2] ++ map (bimap (subtract dx) (subtract dy)) a2s
+
+partTwo :: Grid -> Int
+partTwo grid = 
+    (antennasGroups grid >>= Common.pairs)
+    |> map (\(a1, a2) -> (snd a1, snd a2))
+    |> (>>= antinodes2 grid)
+    |> nub
+    |> length
